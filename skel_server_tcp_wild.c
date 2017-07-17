@@ -1,7 +1,9 @@
 #define ZMQ_BUILD_DRAFT_API 1
+#define IF_ADDR_LENGTH 32
 
 #include <zmq.h>
 #include <errno.h>
+#include <string.h>
 
 int main(void)
 {
@@ -24,11 +26,35 @@ int main(void)
      *      zmq_bind(socket, "tcp://eth0:5555");
      */
 
+    ret = zmq_bind(socket, "tcp://*:5555");
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
+    char if_address[IF_ADDR_LENGTH];
+    size_t if_length = IF_ADDR_LENGTH;
+
+    memset(if_address, 0, sizeof(if_address));
+    ret = zmq_getsockopt(socket, ZMQ_LAST_ENDPOINT, if_address, &if_length);
+
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
+    /* Stop accepting connections on a socket */
+    ret = zmq_unbind(socket, if_address);
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
     /* Closing the socket */
     ret = zmq_close(socket);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
-        return ret;
+        return errno;
     }
 
     /* To free resources (context) allocated by zmq */

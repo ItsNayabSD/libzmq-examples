@@ -24,6 +24,20 @@ int main(void)
      *      zmq_bind(socket, "tcp://eth0:5555");
      */
 
+    /* FIXME Not binding with enp7s0 */
+    ret = zmq_bind(socket, "tcp://enp7s0:5555");
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return ret;
+    }
+
+    /* Stop accepting connections on a socket */
+    ret = zmq_unbind(socket, "tcp://enp7s0:5555");
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
     /* Closing the socket */
     ret = zmq_close(socket);
     if (ret) {

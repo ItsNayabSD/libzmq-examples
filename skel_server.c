@@ -16,7 +16,11 @@ int main(void)
     }
 
     /* Closing the socket */
-    zmq_close(ctx);
+    ret = zmq_close(socket);
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return ret;
+    }
 
     /* To free resources (context) allocated by zmq */
     ret = zmq_ctx_term(ctx);
