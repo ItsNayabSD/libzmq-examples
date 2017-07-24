@@ -15,6 +15,16 @@ int main(void)
         return errno;
     }
 
+    /* Different ways to connect to end point */
+    /* Connecting using an IP address */
+    /*      zmq_connect(socket, "tcp://192.168.1.1:5555"); */
+    /* Connecting using a DNS name */
+    /*      zmq_connect(socket, "tcp://server1:5555"); */
+    /* Connecting using a DNS name and bind to eth1 */
+    /*      zmq_connect(socket, "tcp://eth1:0;server1:5555"); */
+    /* Connecting using a IP address and bind to an IP address */
+    /*      zmq_connect(socket, "tcp://192.168.1.17:5555;192.168.1.1:5555"); assert (rc == 0); */
+
     /* Closing the socket */
     ret = zmq_close(socket);
     if (ret) {
