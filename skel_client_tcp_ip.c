@@ -2,9 +2,14 @@
 
 #include <zmq.h>
 #include <errno.h>
+#include <string.h>
 
-int main(void)
+int main(int argc, char **argv)
 {
+    if (argc < 2) {
+        puts("Pass IP address as argument");
+        return -1;
+    }
     void *ctx = zmq_ctx_new();
     int ret;
 
@@ -15,15 +20,22 @@ int main(void)
         return errno;
     }
 
-    /* Different ways to connect to end point */
     /* Connecting using an IP address */
-    /*      zmq_connect(socket, "tcp://192.168.1.1:5555"); */
-    /* FIXME: Connecting using a DNS name (Not done yet)*/
-    /*      zmq_connect(socket, "tcp://server1:5555"); */
-    /* FIXME: Connecting using a DNS name and bind to eth1 (Not done yet) */
-    /*      zmq_connect(socket, "tcp://eth1:0;server1:5555"); */
-    /* FIXME: Connecting using a IP address and bind to an IP address (Not done yet) */
-    /*      zmq_connect(socket, "tcp://192.168.1.17:5555;192.168.1.1:5555"); assert (rc == 0); */
+    char endpoint[32];
+
+    memset(endpoint, 0, sizeof(endpoint));
+    snprintf(endpoint, sizeof(endpoint), "tcp://%s:5555", argv[1]);
+    ret = zmq_connect(socket, endpoint);
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return ret;
+    }
+
+    ret = zmq_disconnect(socket, endpoint);
+    if (ret) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return ret;
+    }
 
     /* Closing the socket */
     ret = zmq_close(socket);
