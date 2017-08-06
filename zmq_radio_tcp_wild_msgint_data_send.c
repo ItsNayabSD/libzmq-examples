@@ -7,6 +7,7 @@
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 void mem_free(void *data, void *hint)
 {
@@ -34,7 +35,7 @@ int main(void)
      *      zmq_bind(socket, "tcp://eth0:5555");
      */
 
-    ret = zmq_bind(socket, "tcp://*:5555");
+    ret = zmq_bind(socket, "tcp://127.0.0.1:51234");
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
@@ -78,6 +79,7 @@ int main(void)
         return errno;
     }
 
+    sleep(10);
     /* Sending message */
     ret = zmq_msg_send(&msg, socket, 0);
     if (ret == -1) {
@@ -95,6 +97,8 @@ int main(void)
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
     }
+
+    printf("Bound with address %s\n", if_address);
 
     /* Stop accepting connections on a socket */
     ret = zmq_unbind(socket, if_address);
