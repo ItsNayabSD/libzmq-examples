@@ -9,11 +9,11 @@
 
 int main(int argc, char **argv)
 {
-    printf("%d\n", __LINE__);
-    /* if (argc < 2) { */
-        /* puts("Pass IP address as argument"); */
-        /* return -1; */
-    /* } */
+    if (argc < 2) {
+        puts("Pass IP address as argument along with port");
+        puts("Example: ./exe 192.168.101.202:51234");
+        return -1;
+    }
     void *ctx = zmq_ctx_new();
     int ret;
 
@@ -24,37 +24,30 @@ int main(int argc, char **argv)
         return errno;
     }
 
-    printf("%d\n", __LINE__);
+    /* ret = zmq_join(socket, GROUP); */
     ret = zmq_join(socket, GROUP);
 
     /* Connecting using an IP address */
     char endpoint[32];
 
     memset(endpoint, 0, sizeof(endpoint));
-    /* snprintf(endpoint, sizeof(endpoint), "tcp://127.0.0.1:52234", argv[1]); */
-    snprintf(endpoint, sizeof(endpoint), "tcp://192.168.101.202:51234");
-    puts(endpoint);
-    ret = zmq_bind(socket, endpoint);
+    snprintf(endpoint, sizeof(endpoint), "tcp://%s", argv[1]);
+    ret = zmq_connect(socket, endpoint);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return ret;
     }
-
-    sleep(1);
-    printf("%d\n", __LINE__);
+    printf("Connected to %s\n",endpoint);
 
     /* Initialize the message */
     zmq_msg_t msg;
     zmq_msg_init(&msg);
-    printf("%d\n", __LINE__);
 
     ret = zmq_msg_recv(&msg, socket, 0);
-    printf("%d\n", __LINE__);
     if (ret == -1) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
     }
-    printf("%d\n", __LINE__);
 
     char * body = (char*) malloc (sizeof(char) * (zmq_msg_size (&msg) + 1));
     memcpy (body, zmq_msg_data (&msg), zmq_msg_size (&msg));

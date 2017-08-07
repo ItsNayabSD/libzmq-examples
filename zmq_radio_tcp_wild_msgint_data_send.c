@@ -14,8 +14,12 @@ void mem_free(void *data, void *hint)
     free(data);
 }
 
-int main(void)
+int main(int argc, char **argv)
 {
+    if (argc < 2) {
+        printf("Specify port as an argument\n");
+        return argc;
+    }
     void *ctx = zmq_ctx_new();
     int ret;
 
@@ -35,7 +39,12 @@ int main(void)
      *      zmq_bind(socket, "tcp://eth0:5555");
      */
 
-    ret = zmq_bind(socket, "tcp://127.0.0.1:51234");
+    char end_point[IF_ADDR_LENGTH];
+    memset(end_point, 0, IF_ADDR_LENGTH);
+
+    snprintf(end_point, IF_ADDR_LENGTH, "tcp://0.0.0.0:%s", argv[1]);
+    /* listens to all ip address in a network on port 51234 */
+    ret = zmq_bind(socket, end_point);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
@@ -70,8 +79,6 @@ int main(void)
         return EXIT_FAILURE;
     }
 
-    puts(msg_ptr);
-
     /* Setting the group */
     ret = zmq_msg_set_group(&msg, GROUP);
     if (ret) {
@@ -79,13 +86,19 @@ int main(void)
         return errno;
     }
 
-    sleep(10);
+    /* Either use getchar() as a signal to start or use zmq_msg_send in while loop */
+    /* Since zmq_msg_snd is lossy, dish might not receive message */
+    puts("Press enter when you are ready");
+    getchar();
+
+    printf("Sending message %s at %d\n", (char *)msg_ptr, __LINE__);
     /* Sending message */
     ret = zmq_msg_send(&msg, socket, 0);
     if (ret == -1) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
     }
+    puts("Sent message");
 
     /* Finding associated IP address and port*/
     char if_address[IF_ADDR_LENGTH];
@@ -97,8 +110,6 @@ int main(void)
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
     }
-
-    printf("Bound with address %s\n", if_address);
 
     /* Stop accepting connections on a socket */
     ret = zmq_unbind(socket, if_address);
