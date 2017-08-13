@@ -55,6 +55,13 @@ int main(int argc, char **argv)
 
     printf("Received the msg %s\n", body);
 
+    /* Deallocation msg object resources */
+    ret = zmq_msg_close(&msg);
+    if (ret == -1) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
     ret = zmq_disconnect(socket, endpoint);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);

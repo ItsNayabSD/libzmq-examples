@@ -100,6 +100,13 @@ int main(int argc, char **argv)
     }
     puts("Sent message");
 
+    /* Deallocation msg object resources */
+    ret = zmq_msg_close(&msg);
+    if (ret == -1) {
+        printf("Returned with %d at %d\n", errno, __LINE__);
+        return errno;
+    }
+
     /* Finding associated IP address and port*/
     char if_address[IF_ADDR_LENGTH];
     size_t if_length = IF_ADDR_LENGTH;
