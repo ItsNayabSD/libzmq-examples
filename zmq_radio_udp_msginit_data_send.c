@@ -17,7 +17,8 @@ void mem_free(void *data, void *hint)
 int main(int argc, char **argv)
 {
     if (argc < 2) {
-        printf("Specify port as an argument\n");
+        printf("Specify the endpoint\n");
+        printf("Ex: 192.168.101.144:33333\n");
         return argc;
     }
     void *ctx = zmq_ctx_new();
@@ -39,12 +40,12 @@ int main(int argc, char **argv)
      *      zmq_bind(socket, "tcp://eth0:5555");
      */
 
-    char end_point[IF_ADDR_LENGTH];
-    memset(end_point, 0, IF_ADDR_LENGTH);
+    char endpoint[IF_ADDR_LENGTH];
+    memset(endpoint, 0, IF_ADDR_LENGTH);
 
-    snprintf(end_point, IF_ADDR_LENGTH, "udp://0.0.0.0:%s", argv[1]);
+    snprintf(endpoint, IF_ADDR_LENGTH, "udp://%s", argv[1]);
     /* listens to all ip address in a network on port 51234 */
-    ret = zmq_connect(socket, end_point);
+    ret = zmq_connect(socket, endpoint);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
@@ -107,19 +108,7 @@ int main(int argc, char **argv)
         return errno;
     }
 
-    /* Finding associated IP address and port*/
-    char if_address[IF_ADDR_LENGTH];
-    size_t if_length = IF_ADDR_LENGTH;
-
-    memset(if_address, 0, sizeof(if_address));
-    ret = zmq_getsockopt(socket, ZMQ_LAST_ENDPOINT, if_address, &if_length);
-    if (ret) {
-        printf("Returned with %d at %d\n", errno, __LINE__);
-        return errno;
-    }
-
-    /* Stop accepting connections on a socket */
-    ret = zmq_unbind(socket, if_address);
+    ret = zmq_disconnect(socket, endpoint);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;

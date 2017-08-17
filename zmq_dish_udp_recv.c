@@ -1,4 +1,5 @@
 #define ZMQ_BUILD_DRAFT_API 1
+#define IF_ADDR_LENGTH 32
 #define GROUP "mygroup"
 
 #include <zmq.h>
@@ -11,8 +12,7 @@ int main(int argc, char **argv)
 {
     if (argc < 2) {
         puts("Pass IP address as argument along with port");
-        puts("Example (In the same system): ./exe 127.0.0.1:51234 or ./exe 0.0.0.0:51234");
-        puts("Example (For different systems): ./exe 192.168.101.202:51234 (Need to test)");
+        puts("Example ./exe 0.0.0.0:51234");
         return -1;
     }
     void *ctx = zmq_ctx_new();
@@ -63,7 +63,8 @@ int main(int argc, char **argv)
         return errno;
     }
 
-    ret = zmq_disconnect(socket, endpoint);
+    /* Stop accepting connections on a socket */
+    ret = zmq_unbind(socket, endpoint);
     if (ret) {
         printf("Returned with %d at %d\n", errno, __LINE__);
         return errno;
